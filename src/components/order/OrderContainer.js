@@ -4,8 +4,31 @@ import { connect } from 'react-redux';
 class OrderContainer extends Component {
     constructor(props) {
         super(props);
+        this.BOOK = { BIDS: [], ASKS: [] };
     }
+
+    transformBook() {
+        let transformedBook = { BIDS: [], ASKS: [] };
+        ['BIDS', 'ASKS'].forEach(key => {
+            for (let idx in this.props.book[key]) {
+                transformedBook[key].push(this.props.book[key][idx]);
+            }
+        });
+        this.BOOK = transformedBook;
+    }
+
+    sortBook() {
+        for (let key of ['BIDS', 'ASKS']) {
+            this.BOOK[key].sort((obj1, obj2)=>{
+                return obj1.total < obj2.total ? -1 : 1;
+            })
+        }
+    }
+
     render() {
+        this.transformBook();
+        this.sortBook();
+
         return (
             <div className="body-container">
                 <div className="bid-container inner">
@@ -16,18 +39,18 @@ class OrderContainer extends Component {
                         <span className="col align-right">Price</span>
                     </div>
                     <div className="chart-container">
-                        <svg width="100%" height={(this.props.BIDS.length + 1) * 18 + 'px'} style={{ transform: "scale(-1, 1)" }}>
-                            {this.props.BIDS.map((bid, index) => {
+                        <svg width="100%" height={(this.BOOK.BIDS.length + 1) * 18 + 'px'} style={{ transform: "scale(-1, 1)" }}>
+                            {this.BOOK.BIDS.map((bid, index) => {
                                 return (
-                                    <rect key={bid.price} x="1" y={index * 18} width="100%" height="18px" style={{ 
-                                        transform: "scaleX("+ ( bid.total / Math.max(this.props.BIDS[this.props.BIDS.length-1].total, 10) ) + ")"
+                                    <rect key={bid.price} x="1" y={index * 18} width="100%" height="18px" style={{
+                                        transform: "scaleX(" + (bid.total / Math.max(this.BOOK.BIDS[this.BOOK.BIDS.length - 1].total, 10)) + ")"
                                     }}></rect>
                                 )
                             })}
                         </svg>
                     </div>
                     <div className="rows">
-                        {this.props.BIDS.map(bid => {
+                        {this.BOOK.BIDS.map(bid => {
                             return (
                                 <div key={bid.price} className="order-row">
                                     <span className="col align-center">{bid.count}</span>
@@ -47,18 +70,18 @@ class OrderContainer extends Component {
                         <span className="col align-center">Count</span>
                     </div>
                     <div className="chart-container">
-                        <svg width="100%" height={(this.props.ASKS.length + 1) * 18 + 'px'} style={{ transform: "scale(1, 1)" }}>
-                            {this.props.ASKS.map((ask, index) => {
+                        <svg width="100%" height={(this.BOOK.ASKS.length + 1) * 18 + 'px'} style={{ transform: "scale(1, 1)" }}>
+                            {this.BOOK.ASKS.map((ask, index) => {
                                 return (
-                                    <rect key={ask.price} x="1" y={index * 18} width="100%" height="18px" style={{ 
-                                        transform: "scaleX("+ ( ask.total / Math.max(this.props.ASKS[this.props.ASKS.length-1].total, 10) ) + ")"
+                                    <rect key={ask.price} x="1" y={index * 18} width="100%" height="18px" style={{
+                                        transform: "scaleX(" + (ask.total / Math.max(this.BOOK.ASKS[this.BOOK.ASKS.length - 1].total, 10)) + ")"
                                     }}></rect>
                                 )
                             })}
                         </svg>
                     </div>
                     <div className="rows">
-                        {this.props.ASKS.map(ask => {
+                        {this.BOOK.ASKS.map(ask => {
                             return (
                                 <div key={ask.price} className="order-row">
                                     <span className="col align-right">{ask.price}</span>
@@ -77,8 +100,7 @@ class OrderContainer extends Component {
 
 const mapStateToProps = (state) => {
     return {
-        BIDS: state.order.BOOK.BIDS,
-        ASKS: state.order.BOOK.ASKS
+        book: state.order.BOOK
     }
 }
 export default connect(mapStateToProps)(OrderContainer);

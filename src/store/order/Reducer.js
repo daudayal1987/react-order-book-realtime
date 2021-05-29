@@ -2,8 +2,8 @@ import * as OrderActionTypes from './actionTypes';
 
 const initialState = {
     BOOK: { 
-        BIDS: [], 
-        ASKS: [], 
+        BIDS: {}, 
+        ASKS: {}, 
     }
 }
 
@@ -43,14 +43,12 @@ export function Reducer(state = initialState, action) {
     switch (action.type) {
         case OrderActionTypes.ORDER_SNAPSHOT_RECEIVED:
 
-            NEW_BOOK = { BIDS: [], ASKS: [] };
+            NEW_BOOK = { BIDS: {}, ASKS: {} };
             action.payload[1].forEach(order => {
                 const [PRICE, COUNT, AMOUNT] = order;
                 const SIDE = AMOUNT > 0 ? 'BIDS' : 'ASKS';
-                NEW_BOOK[SIDE].push({ count: COUNT, amount: Math.abs(AMOUNT), total: Math.abs(AMOUNT), price: PRICE });
+                NEW_BOOK[SIDE][PRICE] = { count: COUNT, amount: Math.abs(AMOUNT), total: Math.abs(AMOUNT), price: PRICE };
             });
-            
-            sortBook(NEW_BOOK);
 
             return {
                 ...state,
@@ -59,7 +57,8 @@ export function Reducer(state = initialState, action) {
         case OrderActionTypes.ORDER_UPDATE_RECEIVED:
 
             const [PRICE, COUNT, AMOUNT] = action.payload[1];
-            NEW_BOOK = transformToProcess(JSON.parse(JSON.stringify(state.BOOK)));
+            // NEW_BOOK = transformToProcess(JSON.parse(JSON.stringify(state.BOOK)));
+            NEW_BOOK = JSON.parse(JSON.stringify(state.BOOK));
 
             if (COUNT > 0) {
 
@@ -74,8 +73,8 @@ export function Reducer(state = initialState, action) {
                 delete NEW_BOOK[SIDE][PRICE];
             }
 
-            NEW_BOOK = transformToSave(NEW_BOOK);
-            sortBook(NEW_BOOK);
+            // NEW_BOOK = transformToSave(NEW_BOOK);
+            // sortBook(NEW_BOOK);
             
             return {
                 ...state,
